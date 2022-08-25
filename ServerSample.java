@@ -93,6 +93,7 @@ public class ServerSample {
                         }
                     }
                 }
+                //If the new bracket bottom is between bracket at i's values.
                 if (checkNumber == 1) {
                     if (brackets.size() == i + 1) {
                         if (brackets.get(i).getBottom() == 0 && temporary.getBottom() == 0) {
@@ -100,16 +101,18 @@ public class ServerSample {
                         } else {
                             brackets.get(i).setTop(temporary.getBottom() - 1);
                             brackets.add(i+1,temporary);
+                            i++;
                         }
                     } else {
                         brackets.get(i).setTop(temporary.getBottom() - 1);
                         brackets.add(i + 1, temporary);
                         i++;
                     }
-
+                //If the new bracket top is between bracket at i's values
                 } else if (checkNumber == 2) {
                     brackets.get(i).setBottom(temporary.getTop() + 1);
                     break;
+                //If the new brackets bottom and top values are between the bracket at i's
                 } else if (checkNumber == 3) {
                     if (brackets.get(i).getBottom() == temporary.getBottom()) {
                         brackets.add(i, temporary);
@@ -134,9 +137,15 @@ public class ServerSample {
                     }
                 } else if (checkNumber == 4) {
                     brackets.set(i, temporary);
+                    break;
                 } else if (checkNumber == 5) {
+                    if(i == brackets.size()-1){
+                        brackets.set(i,temporary);
+                        break;
+                    }
                     brackets.remove(i);
                     i--;
+
                 }
 
             } else {
