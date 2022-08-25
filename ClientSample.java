@@ -1,38 +1,50 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
 
 
 public class ClientSample {
     public static void main(String[] args) {
-        String msg = "";
-        String outMsg = "";
+        String inMsg = "";
         try (
-            Socket s = new Socket("127.0.0.1", 4500);
-            BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-            PrintWriter out = new PrintWriter(s.getOutputStream(), true);
+                Socket s = new Socket(InetAddress.getLocalHost().getHostAddress(), 4500);
+                BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+                PrintWriter out = new PrintWriter(s.getOutputStream(), true);
 
         ) {
             while(s.isConnected())
             {
-                msg = "";
+                inMsg = "";
+                String outMsg;
                 switch((outMsg = input.readLine())){
                     case "TAX":
                         out.println(outMsg);
-                        while(!(msg = in.readLine()).equals("TAX: OK"));
+                        while(!(inMsg = in.readLine()).equals("TAX: OK"));
+//                        System.out.println("done");
                         break;
                     case "STORE":
                         out.println(outMsg);
-                        for(int i = 0; i < 4; i++)
-                        {
-
-                        }
+                        System.out.println("Input the tax bracket details:");
+                        out.println(input.readLine());
+                        out.println(input.readLine());
+                        out.println(input.readLine());
+                        out.println(input.readLine());
+                        while((inMsg = in.readLine()) == null);
                         break;
-
+                    case "QUERY":
+                        out.println(outMsg);
+                        System.out.println(inMsg+"boom");
+                       while(!(inMsg = in.readLine()).equals("QUERY: OK")) {
+                           if(!inMsg.isBlank()){
+                               outputMessage(inMsg);
+                           }
+                       }
+                       break;
                 }
-                outputMessage(msg);
+                outputMessage(inMsg);
             }
 
             out.println(input.readLine());
