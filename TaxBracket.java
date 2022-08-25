@@ -60,13 +60,13 @@ public class TaxBracket {
         {
             x+=2;
         }
+        if(bottom <= this.bottom && top >= this.top)
+        {
+            x = 5;
+        }
         if(top == this.top && bottom == this.bottom)
         {
             x = 4;
-        }
-        if(bottom < this.bottom && top > this.top)
-        {
-            x = 5;
         }
         return x;
     }
@@ -121,5 +121,12 @@ public class TaxBracket {
         this.taxDollar = taxDollar;
     }
 
-
+//    public String getIncomeTax(int income) {
+//        for (int i = 0; i < brackets.size(); i++) {
+//            if (brackets.get(i).inRange(income)) {
+//                return "TAX IS " + String.valueOf(brackets.get(i).calculateTax(income));
+//            }
+//        }
+//        return "I DON'T KNOW " + income;
+//    }
 }

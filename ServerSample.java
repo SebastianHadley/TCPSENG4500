@@ -30,37 +30,42 @@ public class ServerSample {
                 BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                 PrintWriter out = new PrintWriter(s.getOutputStream(), true)
         ) {
-            while (!(msg = in.readLine()).equals("TAX")) ;
-            outputMessage(msg);
-            out.println("TAX: OK");
-            while (s.isConnected()) {
-                {
-                    switch (msg = in.readLine()) {
-                        case "BYE":
-                            int x = 0;
-                            break;
-                        case "STORE":
-                            System.out.println("hello");
-                            String[] taxInfo = new String[4];
-                            for (int i = 0; i < 4; i++) {
-                                while ((msg = in.readLine()).isBlank()) ;
-                                taxInfo[i] = msg;
-                            }
-                            boolean check = setupBracket(taxInfo);
-                            if(check) {
-                                out.println("STORE: OK");
-                            }else
-                                out.println("STORE: FULL");
-                            msg = "";
-                            break;
-                        case "QUERY":
-                            outputMessage((msg));
-                            System.out.println(brackets.size());
-                            for (int i = 0; i < brackets.size(); i++) {
-                                out.println(brackets.get(i).outputFormat());
-                            }
-                            out.println("QUERY: OK");
-                            break;
+            while(ss.isBound()) {
+                while (!(msg = in.readLine()).equals("TAX")) ;
+                outputMessage(msg);
+                out.println("TAX: OK");
+                while (s.isConnected()) {
+                    {
+                        switch (msg = in.readLine()) {
+
+                            case "STORE":
+                                System.out.println("hello");
+                                String[] taxInfo = new String[4];
+                                for (int i = 0; i < 4; i++) {
+                                    while ((msg = in.readLine()).isBlank()) ;
+                                    taxInfo[i] = msg;
+                                }
+                                boolean check = setupBracket(taxInfo);
+                                if (check) {
+                                    out.println("STORE: OK");
+                                } else
+                                    out.println("STORE: FULL");
+                                msg = "";
+                                break;
+                            case "QUERY":
+                                outputMessage((msg));
+                                System.out.println(brackets.size());
+                                for (int i = 0; i < brackets.size(); i++) {
+                                    out.println(brackets.get(i).outputFormat());
+                                }
+                                out.println("QUERY: OK");
+                                break;
+                            case "BYE":
+                                s.close();
+                                break;
+                            default:
+                                int income = Integer.parseInt(msg);
+                        }
                     }
                 }
             }
@@ -79,8 +84,8 @@ public class ServerSample {
         for (int i = 0; i < brackets.size(); i++) {
             TaxBracket check = brackets.get(i);
             int checkNumber = brackets.get(i).inRange(temporary.getBottom(), temporary.getTop());
+            System.out.println(checkNumber);
             if (brackets.size() < 10) {
-
                 if (checkNumber == 0) {
                     if (i == brackets.size() - 1) {
                         if (brackets.get(brackets.size() - 1).getTop() < temporary.getBottom()) {
@@ -90,15 +95,16 @@ public class ServerSample {
                 }
                 if (checkNumber == 1) {
                     if (brackets.size() == i + 1) {
-                        if (brackets.get(i).getBottom() == 0) {
+                        if (brackets.get(i).getBottom() == 0 && temporary.getBottom() == 0) {
                             brackets.set(i, temporary);
                         } else {
                             brackets.get(i).setTop(temporary.getBottom() - 1);
-                            brackets.add(temporary);
+                            brackets.add(i+1,temporary);
                         }
                     } else {
                         brackets.get(i).setTop(temporary.getBottom() - 1);
                         brackets.add(i + 1, temporary);
+                        i++;
                     }
 
                 } else if (checkNumber == 2) {
@@ -144,6 +150,16 @@ public class ServerSample {
         return true;
     }
 
+    public String getIncomeTax(int income)
+    {
+        for(int i=0; i <brackets.size(); i ++)
+        {
+            if(brackets.get(i).inRange(income)){
+               return "TAX IS "+String.valueOf(brackets.get(i).calculateTax(income));
+            }
+        }
+        return "I DON'T KNOW "+income;
+    }
     public static void outputMessage(String msg) {
         System.out.format("CLIENT: %s\n", msg);
     }

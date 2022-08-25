@@ -43,6 +43,9 @@ public class ClientSample {
                            }
                        }
                        break;
+                    case "BYE":
+                        out.println(outMsg);
+                        s.close();
                 }
                 outputMessage(inMsg);
             }
