@@ -19,11 +19,12 @@ public class ClientSample {
             {
                 inMsg = "";
                 String outMsg;
-                switch((outMsg = input.readLine())){
+                while((outMsg = input.readLine()).isBlank());
+                switch(outMsg){
                     case "TAX":
                         out.println(outMsg);
                         while(!(inMsg = in.readLine()).equals("TAX: OK"));
-//                        System.out.println("done");
+//                      System.out.println("done");
                         break;
                     case "STORE":
                         out.println(outMsg);
@@ -45,7 +46,10 @@ public class ClientSample {
                        break;
                     case "BYE":
                         out.println(outMsg);
-                        s.close();
+                        System.exit(0);
+                    default:
+                        out.println(outMsg);
+                        while((inMsg = in.readLine()).isBlank());
                 }
                 outputMessage(inMsg);
             }

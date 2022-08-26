@@ -76,13 +76,7 @@ public class TaxBracket {
     {
         double taxed;
         taxed = baseTax;
-        if(bottom == 0)
-        {
-            taxed += (income-bottom)*taxDollar;
-        }
-        else {
-            taxed += (income - bottom + 1) * taxDollar;
-        }
+        taxed += (income-bottom)*taxDollar;
         return taxed;
     }
     //Getters and Setters

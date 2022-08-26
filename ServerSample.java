@@ -36,10 +36,10 @@ public class ServerSample {
                 out.println("TAX: OK");
                 while (s.isConnected()) {
                     {
-                        switch (msg = in.readLine()) {
-
+                        while((msg = in.readLine()).isBlank());
+                        outputMessage(msg);
+                        switch (msg) {
                             case "STORE":
-                                System.out.println("hello");
                                 String[] taxInfo = new String[4];
                                 for (int i = 0; i < 4; i++) {
                                     while ((msg = in.readLine()).isBlank()) ;
@@ -53,8 +53,6 @@ public class ServerSample {
                                 msg = "";
                                 break;
                             case "QUERY":
-                                outputMessage((msg));
-                                System.out.println(brackets.size());
                                 for (int i = 0; i < brackets.size(); i++) {
                                     out.println(brackets.get(i).outputFormat());
                                 }
@@ -65,6 +63,7 @@ public class ServerSample {
                                 break;
                             default:
                                 int income = Integer.parseInt(msg);
+                                out.println(getIncomeTax(income));
                         }
                     }
                 }
