@@ -37,13 +37,16 @@ public class TaxServer {
                     Socket s = ss.accept();
                     BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
                     PrintWriter out = new PrintWriter(s.getOutputStream(), true)) {
-                while (!(msg = in.readLine()).equals("TAX"))
+                while (!(msg = in.readLine()).equals("TAX") && s.isConnected())
                     ;
                 boolean connection = true;
+                if(!s.isConnected()){continue;}
                 outputMessage(msg);
                 out.println("TAX: OK");
                 while (connection) {
-                    while ((msg = in.readLine()).isBlank());
+                    if ((msg = in.readLine()).isBlank()) {
+                        continue;
+                    }
                     outputMessage(msg);
                     switch (msg) {
                         case "STORE":

@@ -3,8 +3,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
-
+import java.net.UnknownHostException; 
 public class TaxClient {
     public static void main(String[] args) throws UnknownHostException {
         String inMsg = "";
@@ -30,18 +29,17 @@ public class TaxClient {
                 PrintWriter out = new PrintWriter(s.getOutputStream(), true);
 
         ) {
+            String outMsg;
+
+            while(!(outMsg = input.readLine()).equals("TAX"));
+            out.println(outMsg);
+            while(!(inMsg = in.readLine()).equals("TAX: OK"));
+            outputMessage(inMsg);
             while (s.isConnected()) {
                 inMsg = "";
-                String outMsg;
                 outMsg = input.readLine();
                 if(outMsg.isBlank()){continue;}
                 switch (outMsg) {
-                    case "TAX":
-                        out.println(outMsg);
-                        while (!(inMsg = in.readLine()).equals("TAX: OK"))
-                            ;
-                        // System.out.println("done");
-                        break;
                     case "STORE":
                         out.println(outMsg);
                         System.out.println("Input the tax bracket details:");
@@ -49,13 +47,12 @@ public class TaxClient {
                         out.println(input.readLine());
                         out.println(input.readLine());
                         out.println(input.readLine());
-                        while ((inMsg = in.readLine()) == null)
+                        while ((inMsg = in.readLine()) == null && s.isConnected())
                             ;
                         break;
                     case "QUERY":
                         out.println(outMsg);
-                        System.out.println(inMsg + "boom");
-                        while (!(inMsg = in.readLine()).equals("QUERY: OK")) {
+                        while (!(inMsg = in.readLine()).equals("QUERY: OK") && s.isConnected()) {
                             if (!inMsg.isBlank()) {
                                 outputMessage(inMsg);
                             }
@@ -64,20 +61,18 @@ public class TaxClient {
                     case "END":
                     case "BYE":
                         out.println(outMsg);
-                        while ((inMsg = in.readLine()).isBlank())
+                        while ((inMsg = in.readLine()).isBlank() && s.isConnected())
                             ;
                         outputMessage(inMsg);
                         s.close();
                         System.exit(0);
                     default:
                         out.println(outMsg);
-                        while ((inMsg = in.readLine()).isBlank())
+                        while ((inMsg = in.readLine()).isBlank() && s.isConnected())
                             ;
                 }
                 outputMessage(inMsg);
             }
-
-            out.println(input.readLine());
         } catch (Exception e) { // You should have some better exception handling
             e.printStackTrace();
         }
