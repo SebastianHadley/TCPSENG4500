@@ -1,78 +1,92 @@
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 
-
-public class ServerSample {
+public class TaxServer {
     int socketnumber;
     ArrayList<TaxBracket> brackets = new ArrayList<TaxBracket>();
 
-
     public static void main(String[] args) {
-        ServerSample server = new ServerSample(4500);
-        server.go();
-    }
-
-    //Constructor so that not static methods can be used.
-    public ServerSample(int socket) {
-        socketnumber = socket;
-    }
-
-    //used to allow use of non static methods.
-    public void go() {
-        String msg;
-        try (
-                ServerSocket ss = new ServerSocket(4500);
-                Socket s = ss.accept();
-                BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
-                PrintWriter out = new PrintWriter(s.getOutputStream(), true)
-        ) {
-            while(ss.isBound()) {
-                while (!(msg = in.readLine()).equals("TAX")) ;
-                outputMessage(msg);
-                out.println("TAX: OK");
-                while (s.isConnected()) {
-                    {
-                        while((msg = in.readLine()).isBlank());
-                        outputMessage(msg);
-                        switch (msg) {
-                            case "STORE":
-                                String[] taxInfo = new String[4];
-                                for (int i = 0; i < 4; i++) {
-                                    while ((msg = in.readLine()).isBlank()) ;
-                                    taxInfo[i] = msg;
-                                }
-                                boolean check = setupBracket(taxInfo);
-                                if (check) {
-                                    out.println("STORE: OK");
-                                } else
-                                    out.println("STORE: FULL");
-                                msg = "";
-                                break;
-                            case "QUERY":
-                                for (int i = 0; i < brackets.size(); i++) {
-                                    out.println(brackets.get(i).outputFormat());
-                                }
-                                out.println("QUERY: OK");
-                                break;
-                            case "BYE":
-                                s.close();
-                                break;
-                            default:
-                                int income = Integer.parseInt(msg);
-                                out.println(getIncomeTax(income));
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {  // You should have some better exception handling
+        int port = 4500;
+        if (args.length > 0) {
+            port = Integer.parseInt(args[0]);
+        }
+        TaxServer server = new TaxServer(port);
+        try {
+            server.go();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    // Constructor so that not static methods can be used.
+    public TaxServer(int socket) {
+        socketnumber = socket;
+    }
+
+    // used to allow use of non static methods.
+    public void go() throws IOException {
+        String msg;
+        ServerSocket ss = new ServerSocket(socketnumber);
+        while (!ss.isClosed()) {
+            try (
+                    Socket s = ss.accept();
+                    BufferedReader in = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                    PrintWriter out = new PrintWriter(s.getOutputStream(), true)) {
+                while (!(msg = in.readLine()).equals("TAX"))
+                    ;
+                boolean connection = true;
+                outputMessage(msg);
+                out.println("TAX: OK");
+                while (connection) {
+                    while ((msg = in.readLine()).isBlank());
+                    outputMessage(msg);
+                    switch (msg) {
+                        case "STORE":
+                            String[] taxInfo = new String[4];
+                            for (int i = 0; i < 4; i++) {
+                                while ((msg = in.readLine()).isBlank())
+                                    ;
+                                taxInfo[i] = msg;
+                            }
+                            boolean check = setupBracket(taxInfo);
+                            if (check) {
+                                out.println("STORE: OK");
+                            } else
+                                out.println("STORE: FULL");
+                            msg = "";
+                            break;
+                        case "QUERY":
+                            for (int i = 0; i < brackets.size(); i++) {
+                                out.println(brackets.get(i).outputFormat());
+                            }
+                            out.println("QUERY: OK");
+                            break;
+                        case "BYE":
+                            out.println("BYE: OK");
+                            s.close();
+                            connection = false;
+                            break;
+                        case "END":
+                            out.println("END: OK");
+                            s.close();
+                            ss.close();
+                            System.exit(0);
+                            break;
+                        default:
+                            int income = Integer.parseInt(msg);
+                            out.println(getIncomeTax(income));
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public boolean setupBracket(String[] taxInfo) {
         TaxBracket temporary = new TaxBracket(taxInfo[0], taxInfo[1], taxInfo[2], taxInfo[3]);
@@ -92,14 +106,14 @@ public class ServerSample {
                         }
                     }
                 }
-                //If the new bracket bottom is between bracket at i's values.
+                // If the new bracket bottom is between bracket at i's values.
                 if (checkNumber == 1) {
                     if (brackets.size() == i + 1) {
                         if (brackets.get(i).getBottom() == 0 && temporary.getBottom() == 0) {
                             brackets.set(i, temporary);
                         } else {
                             brackets.get(i).setTop(temporary.getBottom() - 1);
-                            brackets.add(i+1,temporary);
+                            brackets.add(i + 1, temporary);
                             i++;
                         }
                     } else {
@@ -107,11 +121,11 @@ public class ServerSample {
                         brackets.add(i + 1, temporary);
                         i++;
                     }
-                //If the new bracket top is between bracket at i's values
+                    // If the new bracket top is between bracket at i's values
                 } else if (checkNumber == 2) {
                     brackets.get(i).setBottom(temporary.getTop() + 1);
                     break;
-                //If the new brackets bottom and top values are between the bracket at i's
+                    // If the new brackets bottom and top values are between the bracket at i's
                 } else if (checkNumber == 3) {
                     if (brackets.get(i).getBottom() == temporary.getBottom()) {
                         brackets.add(i, temporary);
@@ -126,8 +140,7 @@ public class ServerSample {
                                 String.valueOf(brackets.get(i).getBottom()),
                                 String.valueOf(brackets.get(i).getTop()),
                                 String.valueOf(brackets.get(i).getBasetax()),
-                                String.valueOf(brackets.get(i).getTaxDollarInt())
-                        );
+                                String.valueOf(brackets.get(i).getTaxDollarInt()));
                         brackets.add(i + 1, extra1);
                         brackets.get(i + 1).setBottom(temporary.getTop() + 1);
                         brackets.get(i).setTop(temporary.getBottom() - 1);
@@ -138,8 +151,8 @@ public class ServerSample {
                     brackets.set(i, temporary);
                     break;
                 } else if (checkNumber == 5) {
-                    if(i == brackets.size()-1){
-                        brackets.set(i,temporary);
+                    if (i == brackets.size() - 1) {
+                        brackets.set(i, temporary);
                         break;
                     }
                     brackets.remove(i);
@@ -158,16 +171,15 @@ public class ServerSample {
         return true;
     }
 
-    public String getIncomeTax(int income)
-    {
-        for(int i=0; i <brackets.size(); i ++)
-        {
-            if(brackets.get(i).inRange(income)){
-               return "TAX IS "+String.valueOf(brackets.get(i).calculateTax(income));
+    public String getIncomeTax(int income) {
+        for (int i = 0; i < brackets.size(); i++) {
+            if (brackets.get(i).inRange(income)) {
+                return "TAX IS " + String.valueOf(brackets.get(i).calculateTax(income));
             }
         }
-        return "I DON'T KNOW "+income;
+        return "I DON'T KNOW " + income;
     }
+
     public static void outputMessage(String msg) {
         System.out.format("CLIENT: %s\n", msg);
     }
